@@ -16,4 +16,4 @@ begin
   temp(15 downto 12)<="1111";
   temp(11 downto 0)<=adress_in_muxa;
   adress_out_b<= adress_in_memory when selB='1' else temp;
-end behave_muxb;
+  end behave_muxb;

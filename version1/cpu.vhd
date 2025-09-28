@@ -3,9 +3,10 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 entity cpu is 
 port(
-    opcode : in std_logic_vector(3 downto 0);
-  accz,acc15: in std_logic;
-  o : out std_logic_vector(15 downto 0));
+    --opcode : in std_logic_vector(3 downto 0);
+  --accz,acc15: in std_logic;
+  --o : out std_logic_vector(15 downto 0));
+  rst,clk: in std_logic);
 end cpu;
 
 architecture behave_cpu of cpu is
@@ -95,22 +96,22 @@ component instruction_register is
     );
     
   end component;
-signal rnw_s,sela_s,selb_s,pc_ld_s,ir_ld_s,acc_ld_s,acc_oe_s,acc_z_s,acc_15_s :std_logic;
-signal alufs_s : std_logic_vector(3 downto 0);
+signal acc_z,acc_15,rnw,sela,selb,pc_ld,ir_ld,acc_ld,acc_oe :std_logic;
+signal alufs,opcode : std_logic_vector(3 downto 0);
 signal muxa_s,ir_s,pc_s :std_logic_vector(11 downto 0);
 signal m_s,acc_s,alu_s ,muxb_s:std_logic_vector(15 downto 0);
 signal opcode_s :std_logic_vector(3 downto 0);
 begin
   
-  stat_machine : yy port map(opcode,accz,acc15,rnw_s,sela_s,selb_s,pc_ld_s,ir_ld_s,acc_ld_s,acc_oe_s,alufs_s );
-   muxAa : muxa port map(pc_s,ir_s,sela_s,muxa_s);
-   muxBb : muxb port map(muxa_s,m_s,selb_s,muxb_s);
-   al : alu port map(alufs_s,muxb_s,alu_s,acc_s);
-   pccc : program_counter port map(alu_s,pc_ld_s,pc_s);
-   irr : instruction_register port map (m_s,ir_ld_s,ir_s,opcode_s);
-   accc : accumulator port map(alu_s,acc_ld_s,acc_z_s,acc_15_s,acc_s);
-   mem : memory port map(muxa_s,rnw_s,m_s);
-   enableeeeee : oe port map(acc_s,acc_oe_s,m_s);
+   stat_machine : yy port map(opcode,acc_z,acc_15,rnw,sela,selb,pc_ld,ir_ld,acc_ld,acc_oe,alufs);
+   muxAa : muxa port map(pc_s,ir_s,sela,muxa_s);
+   muxBb : muxb port map(muxa_s,m_s,selb,muxb_s);
+   al : alu port map(alufs,muxb_s,acc_s,alu_s);
+   pccc : program_counter port map(alu_s,pc_ld,pc_s);
+   irr : instruction_register port map (m_s,ir_ld,ir_s,opcode);
+   accc : accumulator port map(alu_s,acc_ld,acc_z,acc_15,acc_s);
+   mem : memory port map(muxa_s,rnw,m_s);
+   --enableeeeee : oe port map(acc_s,acc_oe_s,m_s);
    
 
 

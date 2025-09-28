@@ -13,7 +13,7 @@ entity program_counter is
 architecture behave_program_counter of program_counter is
 
 begin
-  p1 :process(adress_in_alu,pc_ld)
+  p1 :process(pc_ld)
   begin
   if pc_ld='1' then
     adress_out_pc <= adress_in_alu(11 downto 0);

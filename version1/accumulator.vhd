@@ -16,7 +16,7 @@ architecture behave_accumulator of accumulator is
 
 begin
   
-  process(acc_ld, operand_in_alu)
+  process(acc_ld)
     variable all_zero : boolean := true;
     begin
       if(acc_ld ='1') then 

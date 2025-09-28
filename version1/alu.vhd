@@ -15,7 +15,8 @@ end alu;
 architecture behave_alu of alu is 
 --signal verifier : std_logic:='0';
 begin
-  p3:process(alufs,adress_in_acc,adress_in_muxb)
+  --p3:process(alufs,adress_in_acc,adress_in_muxb)
+  p3:process(alufs)
   begin
     --if(verifier ='0')then
       --adress_out_alu<="0000000000000000";

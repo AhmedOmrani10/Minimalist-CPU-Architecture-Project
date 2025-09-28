@@ -14,7 +14,7 @@ entity instruction_register is
 architecture behave_instruction_register of instruction_register is
 
 begin
-  p2 :process(adress_in_memory,ir_ld)
+  p2 :process(ir_ld)
   begin
   if ir_ld='1' then
     adress_out_ir <=  adress_in_memory(11 downto 0);
