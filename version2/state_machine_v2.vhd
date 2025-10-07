@@ -1,137 +1,202 @@
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-entity state_machine_2 is
+use IEEE.STD_LOGIC_1164.all;
+use ieee.numeric_std.all;
+
+entity yy is
     Port (
-        i :in std_logic_vector(5 downto 0);
-  clk:in std_logic;
-  o : out std_logic_vector(8 downto 0));
+       opcode : in std_logic_vector(3 downto 0);
+       accz, acc15 : in std_logic;
+       rnw, sela, selb, pc_ld, ir_ld, acc_ld, acc_oe : out std_logic;
+       alufs : out std_logic_vector(3 downto 0);
+       clk    : in  std_logic;
+       reset  : in  std_logic
+    );
+end yy;
+
+architecture Behavioral of yy is
+
+    type state_type is (
+        S0, S1, S2, S3, S4, S5, S6,S77,
+        OP0_A, OP0_B,OP0_C,
+        OP2_A, OP2_B,OP2_C,
+        OP3_A, OP3_B,OP3_C,
+        OP4_A, OP4_B,OP4_C,
+        OP5_A, OP5_B,OP5_C,
+        OP6_A, OP6_B,OP6_C
+    );
+    signal state, next_state : state_type := S0;
+
+   
+    signal rnw_sig, sela_sig, selb_sig : std_logic := '0';
+    signal pc_ld_sig, ir_ld_sig, acc_ld_sig, acc_oe_sig : std_logic := '0';
+    signal alufs_sig : std_logic_vector(3 downto 0) := (others => '0');
+
+begin
+   
+    rnw    <= rnw_sig;
+    sela   <= sela_sig;
+    selb   <= selb_sig;
+    pc_ld  <= pc_ld_sig;
+    ir_ld  <= ir_ld_sig;
+    acc_ld <= acc_ld_sig;
+    acc_oe <= acc_oe_sig;
+    alufs  <= alufs_sig;
 
     
-end state_machine_2;
-
-architecture Behavioral_state_machine_2 of state_machine_2 is 
-type Etat is (Etat0, Etat1, Etat2,Etat3, Etat4 ,Etat5,Etat6, Etat7, Etat8,Etat9, Etat10, Etat11);
-signal Etat_present, Etat_futur : Etat := Etat0;
-begin
-   Sequentiel_maj_etat : process (clk)
+    process(clk)
     begin
-        if i = "0111XX" then
-            Etat_present <= Etat0;
+        if reset = '1' then
+            state <= S0;
         elsif rising_edge(clk) then
-            Etat_present <= Etat_futur;
+            state <= next_state;
         end if;
-    end process Sequentiel_maj_etat;
+    end process;
+
     
-     Combinatoire_etats : process (i, Etat_present)  
-    begin  
-        case Etat_present is  
-            when Etat0 => 
-                  
-                    Etat_futur <= Etat1;  
-               
+    process(state, opcode, accz, acc15)
+    begin
+        
+        --rnw_sig    <= '0';
+        --sela_sig   <= '0';
+        --selb_sig   <= '0';
+        --pc_ld_sig  <= '0';
+        --ir_ld_sig  <= '0';
+        --acc_ld_sig <= '0';
+        --acc_oe_sig <= '0';
+        alufs_sig  <= (others => 'U');
+        next_state <= state;
+
+        case state is
+            when S0 =>
+                selb_sig <= '0'; pc_ld_sig <= '0'; sela_sig <= '0'; acc_ld_sig <= '0'; ir_ld_sig <= '0';
+                next_state <= S2;rnw_sig <= '1';
+
+            --when S1 =>
+              --  rnw_sig <= '1'; pc_ld_sig <= '1'; ir_ld_sig <= '0';
+                --next_state <= S2;
+
+            when S2 =>
+                rnw_sig <= '1';
+                pc_ld_sig <= '0';ir_ld_sig <= '0';
+                next_state <= S3;
+            when S3 =>
+                rnw_sig <= '1';
+                ir_ld_sig <= '1'; 
+                pc_ld_sig <= '0';
+                sela_sig <= '1';
+                next_state <= S1;
+            when S1 =>
+            sela_sig <= '0';
+            next_state <= S4;
+            when S4 =>
+                ir_ld_sig <= '0';
+                rnw_sig <= '1';
+                sela_sig <= '0';
+                alufs_sig <= "0011"; 
+                report("cccc");
+                next_state <= S5;
+
+            when S5 =>
+                rnw_sig <= '1';
+                sela_sig <= '0';
+                pc_ld_sig <= '1';
+                next_state <= S77;
+            when S77 =>
+                pc_ld_sig <= '0';
+                sela_sig <= '1';
+                next_state <= S6;
+
+           
+
+            when S6 =>
+              report("bbbbb");
               
-            
-            when Etat1 => 
-               
-                    Etat_futur <= Etat2;  
-               
-               
-            
-           when Etat2 =>
-    if (i(5 downto 2) = "0100" or 
-       (i(5 downto 2) = "0101" and i(0) = '0') or 
-       (i(5 downto 2) = "0110" and i(1) = '0') or 
-       (i(5 downto 2) = "0000")) then
-        Etat_futur <= Etat3;
-    elsif (i(5 downto 2) = "0011") then
-        Etat_futur <= Etat6;
-    elsif (i(5 downto 2) = "0010") then
-        Etat_futur <= Etat7;
-    elsif (i(5 downto 2) = "0001") then
-        Etat_futur <= Etat8;
-    end if;
+                case opcode is
+                    when "0000" => next_state <= OP0_A;
+                    when "0010" => next_state <= OP2_A;
+                    when "0011" => next_state <= OP3_A;
+                    when "0100" => next_state <= OP4_A;
+                    when "0101" => next_state <= OP5_A;
+                    when "0110" => next_state <= OP6_A;
+                    when others => next_state <= S0;
+                end case;
 
-when Etat3 =>
-    if (i(5 downto 2) = "0100" or 
-       (i(5 downto 2) = "0101" and i(0) = '0') or 
-       (i(5 downto 2) = "0110" and i(1) = '0')) then
-        Etat_futur <= Etat4;
-    elsif (i(5 downto 2) = "0000") then
-        Etat_futur <= Etat11;
-    end if;
-
-when Etat4 =>
-    if (i(5 downto 2) = "0100" or 
-       (i(5 downto 2) = "0101" and i(0) = '0') or 
-       (i(5 downto 2) = "0110" and i(1) = '0')) then
-        Etat_futur <= Etat5;
-    end if;
-            when Etat5=>
-              Etat_futur <= Etat0 ;
-            when Etat6=>
-              Etat_futur <= Etat11 ;
-            when Etat7=>
-              Etat_futur <= Etat11 ;
-            when Etat8=>
-              Etat_futur <= Etat9 ;
-            when Etat9=>
-              Etat_futur <= Etat10 ;
-            when Etat10=>
-              Etat_futur <= Etat0 ;
-            when Etat11=>
-              Etat_futur <= Etat0 ;
-            
-                    
-                  
+            -- OPCODE = 0000
+            when OP0_A =>
+                report("aaaaa");
+                selb_sig <= '1';
+                next_state <= OP0_B;
+            when OP0_B =>
+              selb_sig <= '1';
+                alufs_sig <= "0000"; 
+                next_state <= OP0_C;
                 
-              
-               
-        end case;  
-    end process Combinatoire_etats;
-    
-    
-    Combinatoire_sorties : process (Etat_present)
-begin
-    case Etat_present is
-        when Etat0 => 
-        o <= "100000000";--10X000XX0
-        
-    when Etat1 => 
-        o <= "100010110";
-        
-    when Etat2 => 
-        o <= "111100000";--111100XX0
-        
-    when Etat3 => 
-        o <= "111100000";
-        
-    when Etat4 => 
-        o <= "111000000";
-        
-    when Etat5 => 
-        o <= "111100000";
-        
-    when Etat6 => 
-        o <= "111100010";
-        
-    when Etat7 => 
-        o <= "111100100";
-        
-    when Etat8 => 
-        o <= "010000000";--01X000XX0
-        
-    when Etat9 => 
-        o <= "010000001";--01X000XX1
-        
-    when Etat10 => 
-        o <= "010000000";--01X000XX0
-        
-    when Etat11 => 
-        o <= "111101000";--111101XX0
-            
-        
-    end case;
-end process Combinatoire_sorties;
-end Behavioral_state_machine_2;
+            when OP0_C =>  
+            selb_sig <= '1'; 
+                acc_ld_sig <= '1';
+                next_state <= S0;
 
-    
+            -- OPCODE = 0010
+            when OP2_A =>
+                selb_sig <= '1';
+                next_state <= OP2_B;
+            when OP2_B =>
+                alufs_sig <= "0010"; 
+                next_state <= OP2_C;
+            when OP2_C =>   
+                acc_ld_sig <= '1';
+                next_state <= S0;
+            -- OPCODE = 0011
+            when OP3_A =>
+                selb_sig <= '1';
+                next_state <= OP3_B;
+            when OP3_B =>
+                alufs_sig <= "0001"; 
+                next_state <= OP3_C;
+            when OP3_C =>   
+                acc_ld_sig <= '1';
+                next_state <= S0;
+            -- OPCODE = 0100
+            when OP4_A =>
+                selb_sig <= '0';
+                next_state <= OP4_B;
+            when OP4_B =>
+                alufs_sig <= "0000"; 
+                next_state <= OP4_C;
+            when OP4_C =>   
+                pc_ld_sig <= '1';
+                next_state <= S0;
+            -- OPCODE = 0101
+            when OP5_A =>
+                selb_sig <= '0';
+                if acc15 = '0' then
+                    next_state <= OP5_B;
+                else
+                    next_state <= S0;
+                end if;
+            when OP5_B =>
+                alufs_sig <= "0000";
+                next_state <= OP5_C;
+            when OP5_C =>   
+                 pc_ld_sig <= '1';
+                next_state <= S0;
+            -- OPCODE = 0110
+            when OP6_A =>
+                selb_sig <= '0';
+                if accz = '0' then
+                    next_state <= OP6_B;
+                else
+                    next_state <= S0;
+                end if;
+            when OP6_B =>
+                alufs_sig <= "0000"; 
+                next_state <= OP6_C;
+            when OP6_C =>   
+                 pc_ld_sig <= '1';
+                next_state <= S0;
+            when others =>
+                next_state <= S0;
+        end case;
+    end process;
+
+end Behavioral;
