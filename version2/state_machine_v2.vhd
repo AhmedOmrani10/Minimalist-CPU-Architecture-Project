@@ -17,7 +17,7 @@ architecture Behavioral of yy is
 
     type state_type is (
         S0, S1, S2, S3, S4, S5, S6,S77,
-        OP0_A, OP0_B,OP0_C,
+        OP0_A, OP0_B,OP0_C,OP1_A,OP1_B,OP1_C,
         OP2_A, OP2_B,OP2_C,
         OP3_A, OP3_B,OP3_C,
         OP4_A, OP4_B,OP4_C,
@@ -69,26 +69,30 @@ begin
         case state is
             when S0 =>
                 selb_sig <= '0'; pc_ld_sig <= '0'; sela_sig <= '0'; acc_ld_sig <= '0'; ir_ld_sig <= '0';
-                next_state <= S2;rnw_sig <= '1';
+                next_state <= S2;rnw_sig <= '1';acc_oe_sig <= '0';
 
             --when S1 =>
               --  rnw_sig <= '1'; pc_ld_sig <= '1'; ir_ld_sig <= '0';
                 --next_state <= S2;
 
             when S2 =>
+              acc_oe_sig <= '0';
                 rnw_sig <= '1';
                 pc_ld_sig <= '0';ir_ld_sig <= '0';
                 next_state <= S3;
             when S3 =>
+                acc_oe_sig <= '0';
                 rnw_sig <= '1';
                 ir_ld_sig <= '1'; 
                 pc_ld_sig <= '0';
                 sela_sig <= '1';
                 next_state <= S1;
             when S1 =>
+              acc_oe_sig <= '0';
             sela_sig <= '0';
             next_state <= S4;
             when S4 =>
+              acc_oe_sig <= '0';
                 ir_ld_sig <= '0';
                 rnw_sig <= '1';
                 sela_sig <= '0';
@@ -97,11 +101,13 @@ begin
                 next_state <= S5;
 
             when S5 =>
+              acc_oe_sig <= '0';
                 rnw_sig <= '1';
                 sela_sig <= '0';
                 pc_ld_sig <= '1';
                 next_state <= S77;
             when S77 =>
+              acc_oe_sig <= '0';
                 pc_ld_sig <= '0';
                 sela_sig <= '1';
                 next_state <= S6;
@@ -113,6 +119,7 @@ begin
               
                 case opcode is
                     when "0000" => next_state <= OP0_A;
+                    when "0001" => next_state <= OP1_A;
                     when "0010" => next_state <= OP2_A;
                     when "0011" => next_state <= OP3_A;
                     when "0100" => next_state <= OP4_A;
@@ -123,34 +130,53 @@ begin
 
             -- OPCODE = 0000
             when OP0_A =>
+              acc_oe_sig <= '0';
                 report("aaaaa");
                 selb_sig <= '1';
                 next_state <= OP0_B;
             when OP0_B =>
+              acc_oe_sig <= '0';
               selb_sig <= '1';
                 alufs_sig <= "0000"; 
                 next_state <= OP0_C;
                 
             when OP0_C =>  
+              acc_oe_sig <= '0';
             selb_sig <= '1'; 
                 acc_ld_sig <= '1';
+                next_state <= S0;
+            -- OPCODE = 0001
+            when OP1_A =>
+              rnw_sig <= '0' ;
+                
+                next_state <= OP1_B;
+            when OP1_B =>
+              rnw_sig <= '0' ;
+              acc_oe_sig <= '1';
+                
                 next_state <= S0;
 
             -- OPCODE = 0010
             when OP2_A =>
+              acc_oe_sig <= '0';
                 selb_sig <= '1';
                 next_state <= OP2_B;
             when OP2_B =>
+              acc_oe_sig <= '0';
                 alufs_sig <= "0010"; 
                 next_state <= OP2_C;
-            when OP2_C =>   
+            when OP2_C => 
+            acc_oe_sig <= '0';  
                 acc_ld_sig <= '1';
                 next_state <= S0;
             -- OPCODE = 0011
             when OP3_A =>
+              acc_oe_sig <= '0';
+              acc_oe_sig <= '0';
                 selb_sig <= '1';
                 next_state <= OP3_B;
             when OP3_B =>
+              acc_oe_sig <= '0';
                 alufs_sig <= "0001"; 
                 next_state <= OP3_C;
             when OP3_C =>   
@@ -158,16 +184,19 @@ begin
                 next_state <= S0;
             -- OPCODE = 0100
             when OP4_A =>
+              acc_oe_sig <= '0';
                 selb_sig <= '0';
                 next_state <= OP4_B;
             when OP4_B =>
                 alufs_sig <= "0000"; 
                 next_state <= OP4_C;
             when OP4_C =>   
+              acc_oe_sig <= '0';
                 pc_ld_sig <= '1';
                 next_state <= S0;
             -- OPCODE = 0101
             when OP5_A =>
+              acc_oe_sig <= '0';
                 selb_sig <= '0';
                 if acc15 = '0' then
                     next_state <= OP5_B;
@@ -175,13 +204,16 @@ begin
                     next_state <= S0;
                 end if;
             when OP5_B =>
+              acc_oe_sig <= '0';
                 alufs_sig <= "0000";
                 next_state <= OP5_C;
             when OP5_C =>   
+              acc_oe_sig <= '0';
                  pc_ld_sig <= '1';
                 next_state <= S0;
             -- OPCODE = 0110
             when OP6_A =>
+              acc_oe_sig <= '0';
                 selb_sig <= '0';
                 if accz = '0' then
                     next_state <= OP6_B;
@@ -189,6 +221,7 @@ begin
                     next_state <= S0;
                 end if;
             when OP6_B =>
+              acc_oe_sig <= '0';
                 alufs_sig <= "0000"; 
                 next_state <= OP6_C;
             when OP6_C =>   
